@@ -156,7 +156,7 @@ variable "dm_multipart_whitelist_ext" {
 }
 
 variable "s2s_names_whitelist" {
-  default = "em_api,em_gw,ccd_gw,ccd_data,sscs,divorce_document_upload,divorce_document_generator,probate_backend,finrem_backend,jui_webapp,pui_webapp,cmc_claim_store"
+  default = "em_api,em_gw,ccd_gw,ccd_data,sscs,divorce_document_upload,divorce_document_generator,probate_backend,finrem_backend,jui_webapp,pui_webapp,cmc_claim_store,bulk_scan_processor"
 }
 
 variable "case_worker_roles" {
@@ -167,4 +167,8 @@ variable "case_worker_roles" {
 ////////////////////////////////////////////////
 variable "max_file_size_in_mb" {
     default = "500"
+}
+
+variable "common_tags" {
+  type = "map"
 }
