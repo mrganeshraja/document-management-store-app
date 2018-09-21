@@ -21,7 +21,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Service
 @Transactional
@@ -62,7 +62,7 @@ public class BlobStorageMigrationService {
     private DocumentContentVersion getDocumentContentVersion(final @NotNull UUID documentId,
                                                              final @NotNull UUID versionId) {
         // Sonar fails us if we use orElseThrow
-        if (!storedDocumentService.findOne(documentId).isPresent()) {
+        if (!storedDocumentService.findOneWithBinaryData(documentId).isPresent()) {
             throw new DocumentNotFoundException(documentId);
         }
 

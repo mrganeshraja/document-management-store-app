@@ -76,6 +76,7 @@ public class TestUtil {
         .mimeType("text/plain")
         .originalDocumentName("filename.txt")
         .size(4L)
+        .contentUri("someUri")
         .storedDocument(StoredDocument.builder().id(RANDOM_UUID).folder(Folder.builder().id(RANDOM_UUID).build()).build())
         .documentContent(DOCUMENT_CONTENT).build();
 
@@ -98,6 +99,14 @@ public class TestUtil {
     public static final StoredDocument DELETED_DOCUMENT = StoredDocument.builder()
         .id(RANDOM_UUID)
         .deleted(true)
+        .folder(Folder.builder().id(RANDOM_UUID).build())
+        .documentContentVersions(Stream.of(DOCUMENT_CONTENT_VERSION).collect(Collectors.toList()))
+        .build();
+
+    public static final StoredDocument HARD_DELETED_DOCUMENT = StoredDocument.builder()
+        .id(RANDOM_UUID)
+        .deleted(true)
+        .hardDeleted(true)
         .folder(Folder.builder().id(RANDOM_UUID).build())
         .documentContentVersions(Stream.of(DOCUMENT_CONTENT_VERSION).collect(Collectors.toList()))
         .build();

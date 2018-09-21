@@ -2,6 +2,7 @@ package uk.gov.hmcts.dm.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,9 +27,9 @@ import uk.gov.hmcts.dm.security.Classifications;
 import java.sql.Blob;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,6 +40,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
@@ -46,6 +48,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.dm.componenttests.TestUtil.DELETED_DOCUMENT;
+import static uk.gov.hmcts.dm.componenttests.TestUtil.HARD_DELETED_DOCUMENT;
 
 /**
  * Created by pawel on 11/07/2017.
@@ -77,23 +80,44 @@ public class StoredDocumentServiceTests {
 
     @Test
     public void testFindOne() {
-        when(this.storedDocumentRepository.findOne(TestUtil.RANDOM_UUID)).thenReturn(TestUtil.STORED_DOCUMENT);
+        when(this.storedDocumentRepository.findOne(any(UUID.class))).thenReturn(TestUtil.STORED_DOCUMENT);
         Optional<StoredDocument> storedDocument = storedDocumentService.findOne(TestUtil.RANDOM_UUID);
         assertThat(storedDocument.get(), equalTo(TestUtil.STORED_DOCUMENT));
     }
 
     @Test
     public void testFindOneThatDoesNotExist() {
-        when(this.storedDocumentRepository.findOne(TestUtil.RANDOM_UUID)).thenReturn(null);
+        when(this.storedDocumentRepository.findOne(any(UUID.class))).thenReturn(null);
         Optional<StoredDocument> storedDocument = storedDocumentService.findOne(TestUtil.RANDOM_UUID);
         assertFalse(storedDocument.isPresent());
     }
 
     @Test
     public void testFindOneThatIsMarkedDeleted() {
-        when(this.storedDocumentRepository.findOne(TestUtil.RANDOM_UUID)).thenReturn(DELETED_DOCUMENT);
+        when(this.storedDocumentRepository.findOne(any(UUID.class))).thenReturn(DELETED_DOCUMENT);
         Optional<StoredDocument> storedDocument = storedDocumentService.findOne(TestUtil.RANDOM_UUID);
         assertFalse(storedDocument.isPresent());
+    }
+
+    @Test
+    public void testFindOneWithBinaryDataThatDoesNotExist() {
+        when(this.storedDocumentRepository.findOne(any(UUID.class))).thenReturn(null);
+        Optional<StoredDocument> storedDocument = storedDocumentService.findOneWithBinaryData(TestUtil.RANDOM_UUID);
+        assertFalse(storedDocument.isPresent());
+    }
+
+    @Test
+    public void testFindOneWithBinaryDataThatIsMarkedHardDeleted() {
+        when(this.storedDocumentRepository.findOne(any(UUID.class))).thenReturn(HARD_DELETED_DOCUMENT);
+        Optional<StoredDocument> storedDocument = storedDocumentService.findOneWithBinaryData(TestUtil.RANDOM_UUID);
+        assertFalse(storedDocument.isPresent());
+    }
+
+    @Test
+    public void testFindOneWithBinaryDataThatIsMarkedDeleted() {
+        when(this.storedDocumentRepository.findOne(any(UUID.class))).thenReturn(DELETED_DOCUMENT);
+        Optional<StoredDocument> storedDocument = storedDocumentService.findOneWithBinaryData(TestUtil.RANDOM_UUID);
+        assertTrue(storedDocument.isPresent());
     }
 
     @Test
@@ -105,7 +129,7 @@ public class StoredDocumentServiceTests {
 
 
     @Test
-    public void testSaveItemsWithCommand() throws Exception {
+    public void testSaveItemsWithCommand() {
         UploadDocumentsCommand uploadDocumentsCommand = new UploadDocumentsCommand();
         uploadDocumentsCommand.setFiles(singletonList(TestUtil.TEST_FILE));
         uploadDocumentsCommand.setRoles(ImmutableList.of("a", "b"));
@@ -119,7 +143,7 @@ public class StoredDocumentServiceTests {
         final DocumentContentVersion latestVersion = storedDocument.getDocumentContentVersions().get(0);
 
         Assert.assertEquals(1, documents.size());
-        Assert.assertEquals(storedDocument.getRoles(), new HashSet(ImmutableList.of("a", "b")));
+        Assert.assertEquals(storedDocument.getRoles(), Sets.newHashSet("a", "b"));
         Assert.assertEquals(storedDocument.getClassification(), Classifications.PRIVATE);
         Assert.assertNull(storedDocument.getMetadata());
         Assert.assertNull(storedDocument.getTtl());
@@ -129,7 +153,7 @@ public class StoredDocumentServiceTests {
 
 
     @Test
-    public void testSaveItemsWithCommandAndToggleConfiguration() throws Exception {
+    public void testSaveItemsWithCommandAndToggleConfiguration() {
 
         when(toggleConfiguration.isMetadatasearchendpoint()).thenReturn(true);
         when(toggleConfiguration.isTtl()).thenReturn(true);
@@ -147,7 +171,7 @@ public class StoredDocumentServiceTests {
         final DocumentContentVersion latestVersion = storedDocument.getDocumentContentVersions().get(0);
 
         Assert.assertEquals(1, documents.size());
-        Assert.assertEquals(storedDocument.getRoles(), new HashSet(ImmutableList.of("a", "b")));
+        Assert.assertEquals(storedDocument.getRoles(), Sets.newHashSet("a","b"));
         Assert.assertEquals(storedDocument.getClassification(), Classifications.PRIVATE);
         Assert.assertEquals(storedDocument.getMetadata(), ImmutableMap.of("prop1", "value1"));
         Assert.assertNotNull(storedDocument.getTtl());
@@ -156,7 +180,7 @@ public class StoredDocumentServiceTests {
     }
 
     @Test
-    public void testSaveItems() throws Exception {
+    public void testSaveItems() {
         List<StoredDocument> documents = storedDocumentService.saveItems(singletonList(TestUtil.TEST_FILE));
 
         final DocumentContentVersion latestVersion = documents.get(0).getDocumentContentVersions().get(0);
@@ -165,8 +189,6 @@ public class StoredDocumentServiceTests {
         Assert.assertEquals(TestUtil.TEST_FILE.getContentType(), latestVersion.getMimeType());
         Assert.assertEquals(TestUtil.TEST_FILE.getOriginalFilename(), latestVersion.getOriginalDocumentName());
     }
-
-
 
     @Test
     public void testAddStoredDocumentVersion() {
@@ -234,7 +256,7 @@ public class StoredDocumentServiceTests {
     }
 
     @Test
-    public void testSaveItemsToBucket() throws Exception {
+    public void testSaveItemsToBucket() {
         Folder folder = new Folder();
 
         storedDocumentService.saveItemsToBucket(folder, Stream.of(TestUtil.TEST_FILE).collect(Collectors.toList()));
@@ -247,7 +269,7 @@ public class StoredDocumentServiceTests {
     }
 
     @Test
-    public void testUpdateDocument() throws Exception {
+    public void testUpdateDocument() {
         StoredDocument storedDocument = new StoredDocument();
         UpdateDocumentCommand command = new UpdateDocumentCommand();
         Date newTtl = new Date();
@@ -257,7 +279,7 @@ public class StoredDocumentServiceTests {
     }
 
     @Test
-    public void testUpdateDeletedDocument() throws Exception {
+    public void testUpdateDeletedDocument() {
         StoredDocument storedDocument = new StoredDocument();
         storedDocument.setDeleted(true);
         UpdateDocumentCommand command = new UpdateDocumentCommand();
