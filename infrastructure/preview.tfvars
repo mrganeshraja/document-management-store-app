@@ -1,8 +1,5 @@
 java_opts = ""
 
-// Webapp
-capacity = "1"
-
 ////////////////////////////////////////////////
 // Endpoints
 ////////////////////////////////////////////////
@@ -31,6 +28,9 @@ enable_folder_api = "true"
 enable_delete = "true"
 enable_ttl  = "true"
 enable_thumbnail = "true"
+
+enable_postgres_blob_storage = "false"
+enable_azure_storage_container = "true"
 
 ////////////////////////////////////////////////
 //// Whitelists

@@ -18,7 +18,8 @@ locals {
   nonPreviewVaultName = "${var.raw_product}-${var.env}"
   vaultName = "${(var.env == "preview" || var.env == "spreview") ? local.previewVaultName : local.nonPreviewVaultName}"
 
-  sharedAppServicePlan = "${var.raw_product}-${var.env}"
+  sharedAppServicePlan = "${var.shared_product}-${var.env}"
+  sharedASPResourceGroup = "${var.shared_product}-shared-${var.env}"
 }
 
 module "app" {
@@ -34,7 +35,8 @@ module "app" {
   https_only="false"
   common_tags  = "${var.common_tags}"
   asp_name = "${(var.asp_name == "use_shared") ? local.sharedAppServicePlan : var.asp_name}"
-  asp_rg = "${(var.asp_rg == "use_shared") ? local.sharedResourceGroup : var.asp_rg}"
+  asp_rg = "${(var.asp_rg == "use_shared") ? local.sharedASPResourceGroup : var.asp_rg}"
+  website_local_cache_sizeinmb = 0
 
   app_settings = {
     POSTGRES_HOST = "${module.db.host_name}"
@@ -96,6 +98,9 @@ module "app" {
     ENABLE_DELETE = "${var.enable_delete}"
     ENABLE_TTL = "${var.enable_ttl}"
     ENABLE_THUMBNAIL = "${var.enable_thumbnail}"
+
+    ENABLE_AZURE_STORAGE_CONTAINER = "${var.enable_azure_storage_container}"
+    ENABLE_POSTGRES_BLOB_STORAGE = "${var.enable_postgres_blob_storage}"
 
     # Document Storage
     STORAGEACCOUNT_PRIMARY_CONNECTION_STRING = "${data.azurerm_key_vault_secret.storageaccount_primary_connection_string.value}"

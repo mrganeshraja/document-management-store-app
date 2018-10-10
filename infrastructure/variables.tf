@@ -6,6 +6,11 @@ variable "raw_product" {
   default = "dm" // jenkins-library overrides product for PRs and adds e.g. pr-118-dm
 }
 
+variable "shared_product" {
+  // We use CCD as our common shared product for any shared infra
+  default = "ccd"
+}
+
 variable "component" {
   type = "string"
 }
@@ -44,7 +49,7 @@ variable "jenkins_AAD_objectId" {
 //Addtional Vars ///////////////////////////////
 ////////////////////////////////////////////////
 variable "capacity" {
-  default = "2"
+  default = "1"
 }
 
 variable "java_opts" {
@@ -144,6 +149,15 @@ variable "enable_ttl" {
 variable "enable_thumbnail" {
     default = "true"
 }
+
+variable "enable_azure_storage_container" {
+  default = "false"
+}
+
+variable "enable_postgres_blob_storage" {
+  default = "true"
+}
+
 ////////////////////////////////////////////////
 // Whitelists
 ////////////////////////////////////////////////
@@ -156,7 +170,7 @@ variable "dm_multipart_whitelist_ext" {
 }
 
 variable "s2s_names_whitelist" {
-  default = "em_api,em_gw,ccd_gw,ccd_data,sscs,divorce_document_upload,divorce_document_generator,probate_backend,finrem_backend,jui_webapp,pui_webapp,cmc_claim_store,bulk_scan_processor"
+  default = "em_api,em_gw,ccd_gw,ccd_data,sscs,divorce_document_upload,divorce_document_generator,probate_backend,finrem_backend,jui_webapp,pui_webapp,cmc_claim_store,bulk_scan_processor,em_npa_app"
 }
 
 variable "case_worker_roles" {
