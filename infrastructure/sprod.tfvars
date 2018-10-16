@@ -9,3 +9,4 @@ asp_rg = "dm-store-sprod"
 
 enable_postgres_blob_storage = "false"
 enable_azure_storage_container = "true"
+use_shared_appinsight = "true"
